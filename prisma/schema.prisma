@@ -79,7 +79,6 @@ model Cms {
   data Json
   gzip Bytes
   hash String @db.Char(32)
-  game Game @default(BEATSTAR)
 }
 
 model News {
