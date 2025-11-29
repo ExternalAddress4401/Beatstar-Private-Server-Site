@@ -1,17 +1,17 @@
 <script lang="ts">
-	import { PUBLIC_SERVER_IP } from '$env/static/public';
 	import SongCard from '$lib/components/SongCard.svelte';
 	import { onMount } from 'svelte';
 	import type { SongCardProps } from '../../../interfaces/SongCardProps';
 	import TextInput from '$lib/components/TextInput.svelte';
+	import { PUBLIC_HTTP_SERVER_IP } from '$env/static/public';
 
 	const songs: SongCardProps[] = [];
 	let filteredSongs: SongCardProps[] = $state([]);
 
 	onMount(async () => {
-		const songRes = await fetch(PUBLIC_SERVER_IP + '/cms/SongConfig/raw');
-		const langConfigRes = await fetch(PUBLIC_SERVER_IP + '/cms/LangConfig/raw');
-		const assetsPatchRes = await fetch(PUBLIC_SERVER_IP + '/cms/AssetsPatchConfig/raw');
+		const songRes = await fetch(PUBLIC_HTTP_SERVER_IP + '/cms/SongConfig/raw');
+		const langConfigRes = await fetch(PUBLIC_HTTP_SERVER_IP + '/cms/LangConfig/raw');
+		const assetsPatchRes = await fetch(PUBLIC_HTTP_SERVER_IP + '/cms/AssetsPatchConfig/raw');
 
 		const songConfig = JSON.parse(await songRes.text());
 		const langConfig = JSON.parse(await langConfigRes.text());
