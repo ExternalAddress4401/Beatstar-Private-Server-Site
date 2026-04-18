@@ -181725,6 +181725,36 @@
 					"idLabel": "iPhone14,3",
 					"platform": 1,
 					"level_id": "iphone_high_120"
+				},
+				{
+					"id": 7,
+					"idLabel": "iPhone17,1",
+					"platform": 1,
+					"level_id": "iphone_high_120"
+				},
+				{
+					"id": 8,
+					"idLabel": "iPhone17,2",
+					"platform": 1,
+					"level_id": "iphone_high_120"
+				},
+				{
+					"id": 9,
+					"idLabel": "iPhone18,1",
+					"platform": 1,
+					"level_id": "iphone_high_120"
+				},
+				{
+					"id": 10,
+					"idLabel": "iPhone18,2",
+					"platform": 1,
+					"level_id": "iphone_high_120"
+				},
+				{
+					"id": 11,
+					"idLabel": "iPhone18,4",
+					"platform": 1,
+					"level_id": "iphone_high_120"
 				}
 			]
 		},
