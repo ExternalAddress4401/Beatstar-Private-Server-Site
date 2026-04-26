@@ -1,14 +1,12 @@
-import prisma from '$lib/prisma';
+import { PUBLIC_HTTP_SERVER_IP } from '$env/static/public';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
-	const cms = await prisma.cms.findMany({
-		select: {
-			name: true
-		}
-	});
+	const response = await fetch(PUBLIC_HTTP_SERVER_IP + '/info');
+
+	const body = await response.json();
 
 	return {
-		cms
+		cms: Object.keys(body).map((el) => ({ name: el }))
 	};
 };

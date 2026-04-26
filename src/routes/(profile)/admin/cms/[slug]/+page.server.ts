@@ -1,12 +1,8 @@
-import prisma from '$lib/prisma';
-import { error, fail } from '@sveltejs/kit';
+import { fail } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 import { zfd } from 'zod-form-data';
-import zlib from 'zlib';
-import crypto from 'crypto';
-import { CMSMap } from '@externaladdress4401/protobuf/tools/CMSMap';
-import { ProtobufHandler } from '@externaladdress4401/protobuf/ProtobufHandler';
 import { isAdmin } from '$lib/wrapper/isAdmin';
+import { PUBLIC_HTTP_SERVER_IP } from '$env/static/public';
 
 const schema = zfd.formData({
 	name: zfd.text(),
@@ -16,28 +12,22 @@ const schema = zfd.formData({
 export const load: PageServerLoad = async ({ params }) => {
 	const slug = params.slug;
 
-	const cms = (
-		await prisma.cms.findFirst({
-			select: {
-				data: true
-			},
-			where: {
-				name: slug
-			}
-		})
-	)?.data;
+	const infoResponse = await fetch(`${PUBLIC_HTTP_SERVER_IP}/info`);
+	const cmsKeys = Object.keys(await infoResponse.json());
 
-	if (!cms) {
-		error(400, 'Not found');
+	if (!cmsKeys.includes(slug)) {
+		return fail(400, { message: 'Invalid CMS file requested.' });
 	}
 
+	const jsonResponse = await fetch(`${PUBLIC_HTTP_SERVER_IP}/cms/${slug}/json`);
+
 	return {
-		cms
+		cms: await jsonResponse.json()
 	};
 };
 
 export const actions = {
-	save: isAdmin(async ({ request }) => {
+	save: isAdmin(async ({ request, cookies }) => {
 		const formData = await request.formData();
 		const response = await schema.safeParseAsync(formData);
 		if (response.error) {
@@ -53,25 +43,23 @@ export const actions = {
 			return fail(400, { message: 'JSON not valid.' });
 		}
 
-		// is this a valid CMS?
-		const proto = CMSMap[name];
-		if (!proto) {
-			return fail(400, { message: 'Invalid name.' });
+		const infoResponse = await fetch(`${PUBLIC_HTTP_SERVER_IP}/info`);
+		const cmsKeys = Object.keys(await infoResponse.json());
+
+		if (!cmsKeys.includes(name)) {
+			return fail(400, { message: 'Invalid CMS file requested.' });
 		}
 
-		const json = JSON.parse(data);
-
-		const built = await new ProtobufHandler('WRITE').writeProto(json, proto);
-
-		await prisma.cms.update({
-			data: {
-				data: json,
-				gzip: zlib.gzipSync(built),
-				hash: crypto.createHash('md5').update(built).digest('hex')
+		await fetch(`${PUBLIC_HTTP_SERVER_IP}/cms/${name}/save`, {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
 			},
-			where: {
-				name
-			}
+			body: JSON.stringify({
+				name,
+				data,
+				id: cookies.get('session')
+			})
 		});
 	})
 };
