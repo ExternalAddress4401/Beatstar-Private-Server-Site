@@ -58,7 +58,7 @@
 			{#if form.error}
 				<p>{form.error}</p>
 			{:else}
-				<p>Username updated successfully.</p>
+				<p>{form.message}</p>
 			{/if}
 		{/if}
 		<p>Star count: {user.starCount}</p>
@@ -79,6 +79,25 @@
 				<p>Unlock all songs</p>
 			</div>
 		</form>
+	</div>
+
+	<hr />
+
+	<div class="block">
+		<h2>Password</h2>
+		<form method="POST" action="?/changePassword" use:enhance>
+			<TextInput name="oldPassword" placeholder="Old password" type="password" />
+			<TextInput name="newPassword" placeholder="New password" type="password" />
+
+			<Button type="submit" text="Update password" />
+		</form>
+		{#if form !== null && form.id === 'changePassword'}
+			{#if form.error}
+				<p>{form.error}</p>
+			{:else}
+				<p>{form.message}</p>
+			{/if}
+		{/if}
 	</div>
 
 	<hr />

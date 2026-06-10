@@ -7,6 +7,7 @@ import { isAndroidId } from '$lib/utilities/isAndroidId';
 import oldPrisma from '$lib/oldPrisma';
 import { updateStarCount } from '$lib/services/UserService';
 import { getFlags } from '$lib/featureFlags';
+import argon2 from '@node-rs/argon2';
 
 const uploadSchema = zfd.formData({
 	profile: zfd.file()
@@ -14,6 +15,11 @@ const uploadSchema = zfd.formData({
 
 const changeUsernameSchema = zfd.formData({
 	username: zfd.text()
+});
+
+const changePasswordSchema = zfd.formData({
+	oldPassword: zfd.text(),
+	newPassword: zfd.text()
 });
 
 const importSchema = zfd.formData({
@@ -168,7 +174,34 @@ export const actions = {
 			}
 		});
 
-		return { success: true, id: 'changeUsername' };
+		return { success: true, message: 'Username updated successfully.', id: 'changeUsername' };
+	}),
+	changePassword: isAuthenticated(async ({ request, user }) => {
+		const data = await request.formData();
+
+		const response = await changePasswordSchema.safeParseAsync(data);
+		if (response.error) {
+			return fail(400);
+		}
+
+		const { oldPassword, newPassword } = response.data;
+
+		const doPasswordsMatch = await argon2.verify(user.password, oldPassword);
+		if (doPasswordsMatch) {
+			await prisma.user.update({
+				data: {
+					password: await argon2.hash(newPassword)
+				},
+				where: {
+					id: user.id
+				}
+			});
+		} else {
+			console.log('wow');
+			return fail(409, { error: 'Old password does not match.', id: 'changePassword' });
+		}
+
+		return { success: true, message: 'Password updated successfully.', id: 'changePassword' };
 	}),
 	import: isAuthenticated(async ({ request, user }) => {
 		const data = await request.formData();
